@@ -1,27 +1,18 @@
-use std::io::{Write};
 use std::env;
-extern crate term;
+use std::io::Write;
+use ansi_term::Color::{Green, Blue, };
 
 pub fn print_prompt() {
     let user = env::var("USER").unwrap();
     let mut pwd = env::var("PWD").unwrap();
     let home = env::var("HOME").unwrap(); 
 
-    let mut t = term::stdout().unwrap();
-
     pwd = pwd.replace(home.as_str(), "~");
 
+    print!("{}", Green.bold().paint("["));
+    print!("{} ", Green.bold().underline().paint(user));
+    print!("{}", Blue.bold().paint(pwd));
+    print!("{}", Green.bold().paint("> "));
 
-    color_write(t.as_mut(), term::color::GREEN, "[");
-    color_write(t.as_mut(), term::color::GREEN, &user);
-    write!(t, " ").unwrap();
-    color_write(t.as_mut(), term::color::BLUE, &pwd);
-    color_write(t.as_mut(), term::color::GREEN, "> ");
-    t.fg(term::color::WHITE).unwrap();
-    t.flush().unwrap();
-}
-
-pub fn color_write(t : &mut term::StdoutTerminal, color: term::color::Color, text: &str) {
-    t.fg(color).unwrap();
-    write!(t, "{}", text).unwrap();
+    std::io::stdout().flush().unwrap();
 }
