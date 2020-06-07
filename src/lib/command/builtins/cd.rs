@@ -5,12 +5,12 @@ pub fn cd(args: &Vec<String>) -> Result<(), EvalError> {
     if args.len() > 1 {
         Err(EvalError::new("Too many arguments"))
     } else {
-        let dir = &args[0];
-
-        if dir.is_empty() {
+        if args.is_empty() {
             env::set_current_dir(env::var("HOME").unwrap()).unwrap();
             return Ok(())
         }
+
+        let dir = &args[0];
         
         match env::set_current_dir(dir) {
             Ok(_) => return Ok(()),
