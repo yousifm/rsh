@@ -23,12 +23,7 @@ impl Command {
     }
 
     pub fn exec (&self) {
-        if self.try_builtin() {
-            match exit(&self.args) {
-                Err(e) => println!("exit: {}", e.message()),
-                _ => (),
-            }
-        } else {
+        if !self.try_builtin() {
             let mut cmd = process::Command::new(&self.command);
             cmd.args(&self.args);
     
@@ -49,8 +44,9 @@ impl Command {
         ];
 
         for built_in in BUILT_INS {
-            if built_in.0 == self.command.to_string() {
-                match (built_in.1)(&self.args) {
+            if built_in.0 == self.command {
+                let result = (built_in.1)(&self.args); 
+                match  result {
                     Err(err) => println!("{}: {}", self.command, err.message()),
                     _ => (),
                 }

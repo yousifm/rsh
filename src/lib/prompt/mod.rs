@@ -4,7 +4,7 @@ use ansi_term::Color::{Green, Blue, };
 
 pub fn print_prompt() {
     let user = env::var("USER").unwrap();
-    let mut pwd = env::var("PWD").unwrap();
+    let mut pwd = String::from(env::current_dir().unwrap().to_str().unwrap());
     let home = env::var("HOME").unwrap(); 
 
     pwd = pwd.replace(home.as_str(), "~");
