@@ -2,7 +2,7 @@ use std::process;
 use std::io::{stderr, stdout, Write};
 
 mod builtins;
-use builtins::{exit::exit};
+use builtins::{exit::exit, cd::cd};
 
 mod evalerror;
 use evalerror::EvalError;
@@ -45,6 +45,7 @@ impl Command {
     fn try_builtin (&self) -> bool {
         static BUILT_INS : &'static [(&'static str, CommandFunction)]= &[
             ("exit", exit),
+            ("cd", cd)
         ];
 
         for built_in in BUILT_INS {
