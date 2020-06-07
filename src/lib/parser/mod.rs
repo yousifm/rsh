@@ -1,7 +1,7 @@
 use std::io::{stdin, };
 use super::command::Command;
 
-pub fn read_command() -> Command {
+pub fn read_command() -> Option<Command> {
     let command: String;
     let mut args: Vec<String>;
 
@@ -11,6 +11,9 @@ pub fn read_command() -> Command {
 
     // Remove trailing new line character
     line.truncate(line.len() - 1);
+    if line.is_empty() {
+        return None;
+    }
 
     let separated = line.split_whitespace();
 
@@ -20,5 +23,5 @@ pub fn read_command() -> Command {
     // Command is first 'word'
     command = args.remove(0);
 
-    Command::new(&command, args)
+    Some(Command::new(&command, args))
 }
