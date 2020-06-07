@@ -3,9 +3,52 @@ use std::fmt;
 use std::io::{stderr, stdin, stdout, Write};
 use std::process;
 
+type CommandFunction = fn(&Vec<String>) -> Result<(), EvalError>;
+
 pub struct Command {
     command: String,
     args: Vec<String>,
+}
+
+impl Command {
+    fn exec (&self) {
+        if self.try_builtin() {
+            match exit(&self.args) {
+                Err(e) => println!("exit: {}", e.message),
+                _ => (),
+            }
+        } else {
+            let mut cmd = process::Command::new(&self.command);
+            cmd.args(&self.args);
+    
+            match cmd.output() {
+                Ok(val) => {
+                    stdout().write_all(&val.stdout).unwrap();
+                    stderr().write_all(&val.stderr).unwrap();
+                }
+                Err(_) => println!("Unrecognized command: {}", self.command),
+            }
+        }
+    }
+
+    fn try_builtin (&self) -> bool {
+        static BUILT_INS : &'static [(&'static str, CommandFunction)]= &[
+            ("exit", exit),
+        ];
+
+        for built_in in BUILT_INS {
+            if built_in.0 == self.command.to_string() {
+                match (built_in.1)(&self.args) {
+                    Err(err) => println!("{}: {}", self.command, err.message),
+                    _ => (),
+                }
+
+                return true;
+            }
+        }
+
+        false
+    }
 }
 
 #[derive(Debug)]
@@ -61,23 +104,7 @@ pub fn read_command() -> Command {
 }
 
 pub fn eval_command(command: &Command) {
-    if command.command == "exit" {
-        match exit(&command.args) {
-            Err(e) => println!("exit: {}", e.message),
-            _ => (),
-        }
-    } else {
-        let mut cmd = process::Command::new(&command.command);
-        cmd.args(&command.args);
-
-        match cmd.output() {
-            Ok(val) => {
-                stdout().write_all(&val.stdout).unwrap();
-                stderr().write_all(&val.stderr).unwrap();
-            }
-            Err(_) => println!("Unrecognized command: {}", command.command),
-        }
-    }
+    command.exec();
 }
 
 fn exit(args: &Vec<String>) -> Result<(), EvalError> {
