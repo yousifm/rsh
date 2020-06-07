@@ -1,4 +1,16 @@
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package]
 
-[workspace]
-members = ["main", "command"]
+name = "rsh"
+version = "0.1.0"
+edition = "2018"
+authors = ["Yousif Alebyary <ymahmoud1b@gmail.com>"]
+readme = "README.md"
+
+[[bin]]
+name = "rsh"
+path = "src/main.rs"
+
+[lib]
+name = "lib"
+path = "src/lib/lib.rs"

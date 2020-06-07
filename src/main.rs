@@ -1,5 +1,14 @@
 use std::io::{stdin, stdout, Write};
-use command::Command;
+
+use lib::{*};
+
+fn main() {
+    loop {
+        print_prompt();
+        let command = read_command(); 
+        eval_command(&command);
+    }
+}
 
 pub fn print_prompt() {
     print!("> ");
