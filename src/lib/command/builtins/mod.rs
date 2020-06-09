@@ -1,4 +1,4 @@
-pub use crate::command::evalerror::EvalError;
+pub use super::EvalError;
 
 pub mod exit;
 pub mod cd;

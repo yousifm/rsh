@@ -1,4 +1,4 @@
-use crate::command::evalerror::EvalError;
+use super::EvalError;
 use std::env;
 
 pub fn cd(args: &Vec<String>) -> Result<(), EvalError> {

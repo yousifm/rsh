@@ -1,4 +1,4 @@
-use crate::command::evalerror::EvalError;
+use super::EvalError;
 use std::process;
 
 pub fn exit(args: &Vec<String>) -> Result<(), EvalError> {

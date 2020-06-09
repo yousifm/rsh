@@ -4,8 +4,8 @@ use std::io::{stderr, stdout, Write};
 mod builtins;
 use builtins::{exit::exit, cd::cd};
 
-mod evalerror;
-use evalerror::EvalError;
+pub mod evalerror;
+pub use evalerror::EvalError;
 
 type CommandFunction = fn(&Vec<String>) -> Result<(), EvalError>;
 
