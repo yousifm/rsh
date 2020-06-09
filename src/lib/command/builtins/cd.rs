@@ -10,8 +10,9 @@ pub fn cd(args: &Vec<String>) -> Result<(), EvalError> {
             return Ok(())
         }
 
-        let dir = &args[0];
-        
+        let home = env::var("HOME").unwrap();
+        let dir = &args[0].replace("~", &home);
+
         match env::set_current_dir(dir) {
             Ok(_) => return Ok(()),
             Err(e) => {
