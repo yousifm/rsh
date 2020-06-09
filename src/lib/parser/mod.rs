@@ -18,7 +18,9 @@ pub fn read_command(prompt_length: u16) -> Option<Command> {
 
         match c.unwrap() {
             Key::Char('\n') => {
-                write!(stdout, "\n{}", termion::cursor::Goto(1, pos.1 + 1)).unwrap();
+                write!(stdout, "{}", termion::cursor::Goto(1, pos.1 + 1)).unwrap();
+                stdout.flush().unwrap();
+
                 return parse_command(line);
             }
             Key::Backspace => {
