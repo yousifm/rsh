@@ -5,17 +5,47 @@ use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use termion::cursor::DetectCursorPos;
 use super::command::Command;
-use super::prompt;
 
-fn is_env_var(value: &String) -> bool {
-    value.starts_with("$")
+pub fn read_command(prompt_length: u16) -> Option<Command> {
+    let stdin = stdin();
+    let mut stdout = stdout().into_raw_mode().unwrap();
+
+    let mut line = String::new();
+    
+    for c in stdin.keys() {
+        let pos = stdout.cursor_pos().unwrap();
+
+        match c.unwrap() {
+            Key::Char('\n') => {
+                write!(stdout, "\n{}", termion::cursor::Goto(1, pos.1 + 1)).unwrap();
+                return parse_command(line);
+            },
+            Key::Backspace => {
+                line.pop();
+                update_cursor_pos(prompt_length, &line);
+            },
+            Key::Ctrl('l') => {
+                write!(stdout, "{}{}", termion::clear::All, termion::cursor::Goto(1,1)).unwrap();
+                return None;
+            },
+            Key::Char(c) => {
+                line.push(c);
+                update_cursor_pos(prompt_length, &line);
+            }
+            _ => (),
+        }
+
+        stdout.flush().unwrap();
+    }
+    return None;
 }
 
-fn to_env_var_value(value: &String) -> String {
-    match env::var(&value[1..]) {
-        Ok(var_val) => var_val,
-        Err(_) => String::new(),
-    }
+fn update_cursor_pos(prompt_length: u16, line: &String) {
+    let mut stdout = stdout().into_raw_mode().unwrap();
+    let pos = stdout.cursor_pos().unwrap();
+
+    write!(stdout, "{}{}", termion::cursor::Goto(prompt_length + 1, pos.1), termion::clear::AfterCursor).unwrap();
+    write!(stdout, "{}", line).unwrap();
 }
 
 fn parse_command(line : String) -> Option<Command> {
@@ -46,33 +76,13 @@ fn parse_command(line : String) -> Option<Command> {
     Some(Command::new(&command, args))
 }
 
-pub fn read_command() -> Option<Command> {
-    let stdin = stdin();
-    let mut stdout = stdout().into_raw_mode().unwrap();
+fn is_env_var(value: &String) -> bool {
+    value.starts_with("$")
+}
 
-    let prompt_len = prompt::print_prompt();
-
-    let mut line = String::new();
-    
-    for c in stdin.keys() {
-        let pos = stdout.cursor_pos().unwrap();
-
-        match c.unwrap() {
-            Key::Char('\n') => {
-                write!(stdout, "\n{}", termion::cursor::Goto(1, pos.1 + 1)).unwrap();
-                return parse_command(line);
-            },
-            Key::Backspace => {
-                line.pop();
-            },
-            Key::Char(c) => line.push(c),
-            _ => (),
-        }
-
-        write!(stdout, "{}{}", termion::cursor::Goto(prompt_len + 1, pos.1), termion::clear::AfterCursor).unwrap();
-        write!(stdout, "{}", line).unwrap();
-
-        stdout.flush().unwrap();
+fn to_env_var_value(value: &String) -> String {
+    match env::var(&value[1..]) {
+        Ok(var_val) => var_val,
+        Err(_) => String::new(),
     }
-    return None;
 }
