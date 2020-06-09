@@ -50,7 +50,7 @@ pub fn read_command() -> Option<Command> {
     let stdin = stdin();
     let mut stdout = stdout().into_raw_mode().unwrap();
 
-    let line_len = prompt::print_prompt();
+    let prompt_len = prompt::print_prompt();
 
     let mut line = String::new();
     
@@ -69,7 +69,7 @@ pub fn read_command() -> Option<Command> {
             _ => (),
         }
 
-        write!(stdout, "{}{}", termion::clear::AfterCursor, termion::cursor::Goto(line_len + 1, pos.1)).unwrap();
+        write!(stdout, "{}{}", termion::cursor::Goto(prompt_len + 1, pos.1), termion::clear::AfterCursor).unwrap();
         write!(stdout, "{}", line).unwrap();
 
         stdout.flush().unwrap();
