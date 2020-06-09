@@ -1,10 +1,22 @@
 use std::io::{stdin, stdout, Write};
+use std::env;
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 use termion::cursor::DetectCursorPos;
 use super::command::Command;
 use super::prompt;
+
+fn is_env_var(value: &String) -> bool {
+    value.starts_with("$")
+}
+
+fn to_env_var_value(value: &String) -> String {
+    match env::var(&value[1..]) {
+        Ok(var_val) => var_val,
+        Err(_) => String::new(),
+    }
+}
 
 fn parse_command(line : String) -> Option<Command> {
     let command: String;
@@ -17,7 +29,16 @@ fn parse_command(line : String) -> Option<Command> {
     let separated = line.split_whitespace();
 
     // Convert from &str iterator to Vec<String>
-    args = separated.map(|val| String::from(val)).collect();
+    args = separated.map(|val| {
+        let mut val = String::from(val);
+
+        // Replace value by environment value
+        if is_env_var(&val) {
+            val = to_env_var_value(&val);
+        }
+
+        val
+    }).collect();
 
     // Command is first 'word'
     command = args.remove(0);
