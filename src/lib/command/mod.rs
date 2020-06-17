@@ -1,8 +1,8 @@
-use std::process;
 use std::io::{stderr, stdout, Write};
+use std::process;
 
 mod builtins;
-use builtins::{exit::exit, cd::cd};
+use builtins::{cd::cd, exit::exit};
 
 pub mod evalerror;
 pub use evalerror::EvalError;
@@ -22,31 +22,25 @@ impl Command {
         }
     }
 
-    pub fn exec (&self) {
+    pub fn exec(&self) {
         if !self.try_builtin() {
-            let mut cmd = process::Command::new(&self.command);
-            cmd.args(&self.args);
-    
-            match cmd.output() {
-                Ok(val) => {
-                    stdout().write_all(&val.stdout).unwrap();
-                    stderr().write_all(&val.stderr).unwrap();
-                }
-                Err(_) => println!("Unrecognized command: {}", self.command),
-            }
+            process::Command::new(&self.command)
+                .args(&self.args)
+                .spawn()
+                .expect(format!("Unrecognized command: {}", self.command).as_ref())
+                .wait()
+                .unwrap();
         }
     }
 
-    fn try_builtin (&self) -> bool {
-        static BUILT_INS : &'static [(&'static str, CommandFunction)]= &[
-            ("exit", exit),
-            ("cd", cd)
-        ];
+    fn try_builtin(&self) -> bool {
+        static BUILT_INS: &'static [(&'static str, CommandFunction)] =
+            &[("exit", exit), ("cd", cd)];
 
         for built_in in BUILT_INS {
             if built_in.0 == self.command {
-                let result = (built_in.1)(&self.args); 
-                match  result {
+                let result = (built_in.1)(&self.args);
+                match result {
                     Err(err) => println!("{}: {}", self.command, err.message()),
                     _ => (),
                 }
